@@ -1,22 +1,21 @@
 import { Server } from "http";
 import app from "./app";
 import mongoose from "mongoose";
+import { envVars } from "./app/config/env";
 
 let server: Server;
-const PORT: number = 5000;
 
-const uri: string =
-  "mongodb+srv://coffee-shop:3LAg4qo7D0VT85qY@cluster0.m81o4rz.mongodb.net/ph-tour?retryWrites=true&w=majority&appName=Cluster0";
+const { DB_URI, PORT } = envVars;
 
 (async () => {
   try {
-    await mongoose.connect(uri);
+    await mongoose.connect(DB_URI);
     console.log("Connented to mongodb");
 
     server = app.listen(PORT, () => {
       console.log(`Server is running at PORT: ${PORT}`);
     });
-  } catch (error: any) {
+  } catch (error) {
     console.log(error);
   }
 })();
@@ -46,7 +45,7 @@ process.on("SIGINT", () => {
 });
 
 // unhandeled rejection error
-process.on("unhandledRejection", (error: any) => {
+process.on("unhandledRejection", (error) => {
   console.log("unhandeled rejection error", error);
 
   if (server) {
@@ -59,7 +58,7 @@ process.on("unhandledRejection", (error: any) => {
 // Promise.reject(new Error("Forget to handel this promise"));
 
 // uncauth exception error
-process.on("uncaughtException", (error: any) => {
+process.on("uncaughtException", (error) => {
   console.log("uncatch exption error", error);
 
   if (server) {
