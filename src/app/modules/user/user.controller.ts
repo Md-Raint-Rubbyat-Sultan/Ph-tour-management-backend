@@ -1,24 +1,35 @@
-import { Request, Response } from "express";
-import { User } from "./user.model";
+import { NextFunction, Request, Response } from "express";
 import { UserServices } from "./user.service";
+import { catchAsync } from "../../utils/catchAsync";
+import { SendResponse } from "../../utils/sendResponse";
 
-const createUser = async (req: Request, res: Response) => {
-  try {
-    const user = await UserServices.createUser(req.body);
+const createUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await UserServices.createUser(req.body);
 
-    res.status(201).json({
+    SendResponse(res, {
+      statusCode: 201,
+      success: true,
       message: "User created successfully",
-      user,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({
-      message: `Somethig went wrong: ${error}`,
-      error,
+      data: result.data,
     });
   }
-};
+);
+
+const getAllUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await UserServices.getAllUser();
+
+    SendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Users retrive successfully",
+      data: result.data,
+    });
+  }
+);
 
 export const UserControllers = {
   createUser,
+  getAllUser,
 };
