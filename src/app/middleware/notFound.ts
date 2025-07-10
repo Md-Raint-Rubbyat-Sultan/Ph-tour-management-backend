@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
+import { SendResponse } from "../utils/sendResponse";
 
 const notFound = (req: Request, res: Response) => {
-  res.status(404).json({
+  SendResponse(res, {
+    statusCode: 404,
     success: false,
-    message: `${req.path} not found`,
+    message: "Requested call is not valied",
+    data: null,
   });
 };
 
