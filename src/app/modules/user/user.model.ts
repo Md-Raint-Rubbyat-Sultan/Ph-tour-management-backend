@@ -1,5 +1,7 @@
-import { model, Schema } from "mongoose";
+import { CallbackWithoutResultAndOptionalError, model, Schema } from "mongoose";
 import { IAuthProvider, IsActive, IUser, Role } from "./user.interface";
+import AppError from "../../errorHelpers/appError";
+import bcrypt from "bcryptjs";
 
 const authProviderSchema = new Schema<IAuthProvider>(
   {
@@ -34,6 +36,18 @@ const userSchema = new Schema<IUser>(
   {
     timestamps: true,
     versionKey: false,
+  }
+);
+
+userSchema.pre(
+  "save",
+  async function (next: CallbackWithoutResultAndOptionalError) {
+    try {
+      this.password = await bcrypt.hash(this.password as string, 10);
+      next();
+    } catch (error) {
+      throw new AppError(500, "Failed to hash password.");
+    }
   }
 );
 
