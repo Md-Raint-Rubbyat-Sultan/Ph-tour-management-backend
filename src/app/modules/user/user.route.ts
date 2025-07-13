@@ -1,6 +1,6 @@
-import { NextFunction, Request, Response, Router } from "express";
+import { Router } from "express";
 import { UserControllers } from "./user.controller";
-import { createUserZodSchema } from "./user.validation";
+import { createUserZodSchema, updateUserZodSchema } from "./user.validation";
 import { validateRequest } from "../../middleware/validateRequest";
 import { Role } from "./user.interface";
 import { checkAuth } from "../../middleware/checkAuth";
@@ -16,6 +16,7 @@ router.post(
 router.patch(
   "/:id",
   checkAuth(...Object.values(Role)),
+  validateRequest(updateUserZodSchema),
   UserControllers.updateUser
 );
 

@@ -33,5 +33,3 @@ export interface IUser {
   bookings?: Types.ObjectId[];
   guides?: Types.ObjectId[];
 }
-
-export interface AppDoc extends IUser, Document {}

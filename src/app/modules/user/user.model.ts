@@ -1,5 +1,5 @@
 import { CallbackWithoutResultAndOptionalError, model, Schema } from "mongoose";
-import { AppDoc, IAuthProvider, IsActive, IUser, Role } from "./user.interface";
+import { IAuthProvider, IsActive, IUser, Role } from "./user.interface";
 import AppError from "../../errorHelpers/appError";
 import bcrypt from "bcryptjs";
 import { envVars } from "../../config/env";
@@ -40,7 +40,7 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-userSchema.pre<AppDoc>(
+userSchema.pre(
   "save",
   async function (next: CallbackWithoutResultAndOptionalError) {
     try {
