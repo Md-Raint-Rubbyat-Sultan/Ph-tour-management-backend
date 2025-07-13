@@ -1,5 +1,5 @@
 import { CallbackWithoutResultAndOptionalError, model, Schema } from "mongoose";
-import { IAuthProvider, IsActive, IUser, Role } from "./user.interface";
+import { AppDoc, IAuthProvider, IsActive, IUser, Role } from "./user.interface";
 import AppError from "../../errorHelpers/appError";
 import bcrypt from "bcryptjs";
 import { envVars } from "../../config/env";
@@ -40,14 +40,18 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-userSchema.pre(
+userSchema.pre<AppDoc>(
   "save",
   async function (next: CallbackWithoutResultAndOptionalError) {
     try {
-      this.password = await bcrypt.hash(
-        this.password as string,
-        Number(envVars.BCRYPT_SALT)
-      );
+      if (this.password) {
+        if (this.isModified("password") || this.isNew) {
+          this.password = await bcrypt.hash(
+            this.password as string,
+            Number(envVars.BCRYPT_SALT)
+          );
+        }
+      }
       next();
     } catch (error) {
       throw new AppError(500, "Failed to hash password.");
