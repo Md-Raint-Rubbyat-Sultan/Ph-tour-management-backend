@@ -4,6 +4,7 @@ import { AuthServices } from "./auth.service";
 import { SendResponse } from "../../utils/sendResponse";
 import { setAuthCookies } from "../../utils/setCookies";
 import AppError from "../../errorHelpers/appError";
+import { envVars } from "../../config/env";
 
 const credentialLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -41,7 +42,48 @@ const getAccessToken = catchAsync(
   }
 );
 
+const logout = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: envVars.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: envVars.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
+    SendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "User Loged out successfully",
+      data: null,
+    });
+  }
+);
+
+const resetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { oldPassword, newPassword } = req.body;
+    const decodedToken = req.user;
+
+    await AuthServices.resetPassword(oldPassword, newPassword, decodedToken);
+
+    SendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Password changed successfully",
+      data: null,
+    });
+  }
+);
+
 export const AuthControllers = {
   credentialLogin,
   getAccessToken,
+  logout,
+  resetPassword,
 };
