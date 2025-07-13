@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { UserControllers } from "./user.controller";
-import z, { AnyZodObject } from "zod";
 import { createUserZodSchema } from "./user.validation";
-import { catchAsync } from "../../utils/catchAsync";
 import { validateRequest } from "../../middleware/validateRequest";
+import { Role } from "./user.interface";
+import { checkAuth } from "../../middleware/checkAuth";
 
 const router = Router();
 
@@ -13,6 +13,10 @@ router.post(
   UserControllers.createUser
 );
 
-router.get("/", UserControllers.getAllUser);
+router.get(
+  "/",
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  UserControllers.getAllUser
+);
 
 export const UserRoutes = router;
