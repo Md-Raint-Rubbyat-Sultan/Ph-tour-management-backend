@@ -2,10 +2,33 @@ import { NextFunction, Request, Response } from "express";
 import { UserServices } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { SendResponse } from "../../utils/sendResponse";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { envVars } from "../../config/env";
 
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const result = await UserServices.createUser(req.body);
+
+    SendResponse(res, {
+      statusCode: 201,
+      success: true,
+      message: "User created successfully",
+      data: result.data,
+    });
+  }
+);
+
+const updateUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.id;
+    const payload = req.body;
+    const verifiedToken = req.user;
+
+    const result = await UserServices.updateUser(
+      userId,
+      payload,
+      verifiedToken
+    );
 
     SendResponse(res, {
       statusCode: 201,
@@ -31,5 +54,6 @@ const getAllUser = catchAsync(
 
 export const UserControllers = {
   createUser,
+  updateUser,
   getAllUser,
 };
