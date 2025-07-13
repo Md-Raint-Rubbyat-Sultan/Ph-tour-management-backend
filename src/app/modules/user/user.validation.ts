@@ -28,10 +28,6 @@ export const updateUserZodSchema = z.object({
     .string({ invalid_type_error: "Name must be string." })
     .min(1, { message: "Name is too short." })
     .optional(),
-  email: z
-    .string({ invalid_type_error: "Email must be string." })
-    .email({ message: "Invalied email address." })
-    .optional(),
   password: z
     .string({ invalid_type_error: "Password must be string." })
     .min(6, { message: "Password should contain minimum 6 characters" })

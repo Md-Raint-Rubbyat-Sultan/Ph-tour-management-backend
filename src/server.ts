@@ -2,12 +2,13 @@ import { Server } from "http";
 import app from "./app";
 import mongoose from "mongoose";
 import { envVars } from "./app/config/env";
+import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
 
 let server: Server;
 
 const { DB_URI, PORT } = envVars;
 
-(async () => {
+const startServer = async () => {
   try {
     await mongoose.connect(DB_URI);
     console.log("Connented to mongodb");
@@ -18,6 +19,11 @@ const { DB_URI, PORT } = envVars;
   } catch (error) {
     console.log(error);
   }
+};
+
+(async () => {
+  await startServer();
+  await seedSuperAdmin();
 })();
 
 // signal termination or sigterm
