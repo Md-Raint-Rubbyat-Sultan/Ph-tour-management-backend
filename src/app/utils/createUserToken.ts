@@ -7,7 +7,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { User } from "../modules/user/user.model";
 
 export const createUserToken = (
-  user: Partial<IUser> & { _id: Types.ObjectId }
+  user: Partial<IUser> & { _id?: Types.ObjectId }
 ) => {
   const jwtPayload = {
     userId: user._id,
