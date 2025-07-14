@@ -5,6 +5,8 @@ import { SendResponse } from "../../utils/sendResponse";
 import { setAuthCookies } from "../../utils/setCookies";
 import AppError from "../../errorHelpers/appError";
 import { envVars } from "../../config/env";
+import { JwtPayload } from "jsonwebtoken";
+import { createUserToken } from "../../utils/createUserToken";
 
 const credentialLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -68,7 +70,7 @@ const logout = catchAsync(
 const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { oldPassword, newPassword } = req.body;
-    const decodedToken = req.user;
+    const decodedToken = req.user as JwtPayload;
 
     await AuthServices.resetPassword(oldPassword, newPassword, decodedToken);
 
@@ -81,9 +83,32 @@ const resetPassword = catchAsync(
   }
 );
 
+// google auth passport controller
+const googleAuthCallback = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+    let redirectTo = (req.query.state as string) || "/";
+
+    if (redirectTo.startsWith("/")) {
+      redirectTo = redirectTo.slice(1);
+    }
+
+    if (!user) {
+      throw new AppError(404, "User not found.");
+    }
+
+    const result = createUserToken(user);
+
+    setAuthCookies(res, result);
+
+    res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
+  }
+);
+
 export const AuthControllers = {
   credentialLogin,
   getAccessToken,
   logout,
   resetPassword,
+  googleAuthCallback,
 };
