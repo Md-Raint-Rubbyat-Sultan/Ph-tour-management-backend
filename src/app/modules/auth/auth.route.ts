@@ -18,7 +18,7 @@ router.post(
 router.get(
   "/google",
   async (req: Request, res: Response, next: NextFunction) => {
-    const redirect = req.query.redirect;
+    const redirect = req.query?.redirect;
 
     passport.authenticate("google", {
       scope: ["profile", "email"],

@@ -27,7 +27,7 @@ const updateUser = catchAsync(
     const result = await UserServices.updateUser(
       userId,
       payload,
-      verifiedToken
+      verifiedToken as JwtPayload
     );
 
     SendResponse(res, {
