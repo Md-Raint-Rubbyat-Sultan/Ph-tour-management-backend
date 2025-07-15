@@ -7,6 +7,50 @@ import {
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
 import { Role } from "../modules/user/user.interface";
+import { Strategy as localStrategy } from "passport-local";
+import bcrypt from "bcryptjs";
+
+passport.use(
+  new localStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password",
+    },
+    async (email: string, password: string, done) => {
+      try {
+        const isUserExisted = await User.findOne({ email });
+        if (!isUserExisted) {
+          return done(null, false, { message: "User does not exist." });
+        }
+
+        const userAuthenticated = isUserExisted.auth.some(
+          (userProvider) => userProvider.provider === "google"
+        );
+
+        if (userAuthenticated && !isUserExisted.password) {
+          return done(null, false, {
+            message:
+              "This email is already authenticaed with google sign in. If you want to use it with password authentication, then login with google and the set a password to login with email password.",
+          });
+        }
+
+        const isCorrectPassword = await bcrypt.compare(
+          password as string,
+          isUserExisted.password as string
+        );
+
+        if (!isCorrectPassword) {
+          return done(null, false, { message: "Incorrect password" });
+        }
+
+        return done(null, isUserExisted);
+      } catch (error) {
+        console.log(error);
+        done(error);
+      }
+    }
+  )
+);
 
 passport.use(
   new googleStrategy(
