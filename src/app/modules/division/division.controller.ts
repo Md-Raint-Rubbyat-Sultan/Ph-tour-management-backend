@@ -38,13 +38,13 @@ const getAllDivision = catchAsync(
 
 const updateDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const oldSlug = req.params.id;
+    const _id = req.params.id;
     const divisionInfo = req.body;
     const newSlug = divisionInfo?.name
       ? createSlug(divisionInfo?.name)
-      : oldSlug;
+      : divisionInfo?.slug;
 
-    const result = await DivisionServices.updateDivision(oldSlug, {
+    const result = await DivisionServices.updateDivision(_id, {
       slug: newSlug,
       ...divisionInfo,
     });
@@ -60,9 +60,9 @@ const updateDivision = catchAsync(
 
 const deleteDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const slug = req.params.id;
+    const _id = req.params.id;
 
-    const result = await DivisionServices.deleteDivision(slug);
+    const result = await DivisionServices.deleteDivision(_id);
 
     SendResponse(res, {
       statusCode: 200,
