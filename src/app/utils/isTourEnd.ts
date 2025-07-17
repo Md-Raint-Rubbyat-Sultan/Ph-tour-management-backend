@@ -7,7 +7,7 @@ export const hasTourEnds = (endDate: Date): boolean => {
 };
 
 export const handleTourDeleteWhenRefDelete = async (
-  _id: Types.ObjectId,
+  _id: Types.ObjectId | string,
   name: string,
   linkedTo: string
 ) => {
