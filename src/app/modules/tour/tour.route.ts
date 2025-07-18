@@ -42,7 +42,9 @@ router.post(
   TourControllers.createTour
 );
 
-router.get("/tour", TourControllers.getAllTours);
+router.get("/", TourControllers.getAllTours);
+
+router.get("/:slug", TourControllers.getAllTours);
 
 router.patch(
   "/:id",

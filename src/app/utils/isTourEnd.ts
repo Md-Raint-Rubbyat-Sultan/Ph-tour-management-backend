@@ -53,6 +53,8 @@ export const handleTourDeleteWhenRefDelete = async (
       );
     }
 
+    // Before deleting tours delete the bookings related to this tour first.
+
     const result = await Tour.deleteMany({ division: _id });
     console.log(result);
   }

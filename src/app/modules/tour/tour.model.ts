@@ -1,5 +1,6 @@
 import { model, Schema } from "mongoose";
 import { ITour, ITourType } from "./tour.interface";
+import { createSlug } from "../../utils/createSlug";
 
 const tourTypeSchema = new Schema<ITourType>(
   {
@@ -16,7 +17,7 @@ export const TourType = model<ITourType>("TourType", tourTypeSchema);
 const tourSchema = new Schema<ITour>(
   {
     title: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, trim: true },
+    slug: { type: String, unique: true, trim: true },
     description: { type: String, trim: true },
     images: { type: [String], default: [] },
     location: { type: String },
@@ -47,5 +48,34 @@ const tourSchema = new Schema<ITour>(
     versionKey: false,
   }
 );
+
+tourSchema.pre("save", async function (next) {
+  if (this.isModified("title")) {
+    let baseSlug = createSlug(this.title);
+    let counter = 0;
+    while (await Tour.exists({ slug: baseSlug })) {
+      baseSlug = `${baseSlug}-${counter++}`;
+    }
+
+    this.slug = baseSlug;
+  }
+  next();
+});
+
+tourSchema.pre("findOneAndUpdate", async function (next) {
+  const tour = this.getUpdate() as ITour;
+
+  if (tour.title) {
+    let baseSlug = createSlug(tour.title);
+    let counter = 0;
+    while (await Tour.exists({ slug: baseSlug })) {
+      baseSlug = `${baseSlug}-${counter++}`;
+    }
+
+    tour.slug = baseSlug;
+  }
+
+  next();
+});
 
 export const Tour = model<ITour>("Tour", tourSchema);

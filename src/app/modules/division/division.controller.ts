@@ -7,12 +7,8 @@ import { createSlug } from "../../utils/createSlug";
 const createDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const divisionInfo = req.body;
-    const slug = createSlug(divisionInfo.name);
 
-    const result = await DivisionServices.createDivision({
-      ...divisionInfo,
-      slug,
-    });
+    const result = await DivisionServices.createDivision(divisionInfo);
 
     SendResponse(res, {
       statusCode: 201,
@@ -36,18 +32,26 @@ const getAllDivision = catchAsync(
   }
 );
 
+const getSingleDivision = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const slug = req.params.slug;
+    const result = await DivisionServices.getSingleDivision(slug);
+
+    SendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Division retrived successfully",
+      data: result.data,
+    });
+  }
+);
+
 const updateDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const _id = req.params.id;
     const divisionInfo = req.body;
-    const newSlug = divisionInfo?.name
-      ? createSlug(divisionInfo?.name)
-      : divisionInfo?.slug;
 
-    const result = await DivisionServices.updateDivision(_id, {
-      slug: newSlug,
-      ...divisionInfo,
-    });
+    const result = await DivisionServices.updateDivision(_id, divisionInfo);
 
     SendResponse(res, {
       statusCode: 201,
@@ -76,6 +80,7 @@ const deleteDivision = catchAsync(
 export const DivisionControllers = {
   createDivision,
   getAllDivision,
+  getSingleDivision,
   updateDivision,
   deleteDivision,
 };
