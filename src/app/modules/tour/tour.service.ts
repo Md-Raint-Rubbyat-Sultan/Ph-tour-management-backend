@@ -2,6 +2,10 @@ import AppError from "../../errorHelpers/appError";
 import { Tour, TourType } from "./tour.model";
 import { handleTourDeleteWhenRefDelete } from "../../utils/isTourEnd";
 import { ITour } from "./tour.interface";
+import { createSlug } from "../../utils/createSlug";
+import { tourSearchableFields } from "./tour.constants";
+import { excludedField } from "../../constants/constants";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 
 // Tour-Types
 const createTourType = async (name: string) => {
@@ -73,15 +77,39 @@ const createTour = async (payload: ITour) => {
   };
 };
 
-const getAllTours = async () => {
-  const allTours = await Tour.find({});
+const getAllTours = async (query: Record<string, string>) => {
+  const queryElement = new QueryBuilder(Tour.find(), query);
+
+  const tours = queryElement
+    .search(tourSearchableFields)
+    .filter()
+    .sort()
+    .fields()
+    .paginate();
+
+  const [data, meta] = await Promise.all([
+    tours.build(),
+    queryElement.getMeta(),
+  ]);
 
   return {
-    data: allTours,
+    data,
+    meta,
   };
 };
 
-const updateTour = async (_id: string, payload: Partial<ITour>) => {
+const getSingleTour = async (slug: string) => {
+  const tour = await Tour.findOne({ slug });
+
+  return {
+    data: tour,
+  };
+};
+
+const updateTour = async (
+  _id: string,
+  payload: Partial<ITour>
+): Promise<{ data: ITour | null }> => {
   const existingTour = await Tour.findById(_id);
 
   if (!existingTour) {
@@ -108,6 +136,7 @@ export const TourServices = {
   deleteTourTypes,
   createTour,
   getAllTours,
+  getSingleTour,
   updateTour,
   deleteTour,
 };

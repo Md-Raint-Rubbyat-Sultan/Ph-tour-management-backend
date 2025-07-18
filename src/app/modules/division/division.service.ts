@@ -1,4 +1,5 @@
 import AppError from "../../errorHelpers/appError";
+import { createSlug } from "../../utils/createSlug";
 import { handleTourDeleteWhenRefDelete } from "../../utils/isTourEnd";
 import { IDivision } from "./division.interface";
 import { Division } from "./division.model";
@@ -25,11 +26,28 @@ const getAllDivision = async () => {
   };
 };
 
+const getSingleDivision = async (slug: string) => {
+  const division = await Division.findOne({ slug });
+
+  return {
+    data: division,
+  };
+};
+
 const updateDivision = async (_id: string, payload: Partial<IDivision>) => {
   const isDivisionExist = await Division.findById(_id);
 
   if (!isDivisionExist) {
     throw new AppError(400, "Division does not exist.");
+  }
+
+  const dulicateDivision = await Division.findOne({
+    name: payload.name,
+    _id: { $ne: _id },
+  });
+
+  if (dulicateDivision) {
+    throw new AppError(400, "A division with this name already exist.");
   }
 
   const updatedDivision = await Division.findByIdAndUpdate(_id, payload, {
@@ -61,6 +79,7 @@ const deleteDivision = async (_id: string) => {
 export const DivisionServices = {
   createDivision,
   getAllDivision,
+  getSingleDivision,
   updateDivision,
   deleteDivision,
 };
