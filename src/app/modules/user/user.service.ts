@@ -4,6 +4,8 @@ import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import bcrypt from "bcryptjs";
 import { envVars } from "../../config/env";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { userSearchableFields } from "./user.constants";
 
 const createUser = async (payload: Partial<IUser>) => {
   const { email, ...rest } = payload;
@@ -63,13 +65,37 @@ const updateUser = async (
   return { data: newUpdatedUser };
 };
 
-const getAllUser = async () => {
-  const user = await User.find({});
-  return { data: user };
+const getAllUser = async (query: Record<string, string>) => {
+  const queryElement = new QueryBuilder(User.find(), query);
+
+  const tours = queryElement
+    .search(userSearchableFields)
+    .filter()
+    .sort()
+    .fields()
+    .paginate();
+
+  const [data, meta] = await Promise.all([
+    tours.build(),
+    queryElement.getMeta(),
+  ]);
+
+  return {
+    data,
+    meta,
+  };
+};
+
+const getSingleUser = async (_id: string) => {
+  const user = await User.findById(_id);
+  return {
+    data: user,
+  };
 };
 
 export const UserServices = {
   createUser,
   updateUser,
   getAllUser,
+  getSingleUser,
 };

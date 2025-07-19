@@ -2,9 +2,7 @@ import AppError from "../../errorHelpers/appError";
 import { Tour, TourType } from "./tour.model";
 import { handleTourDeleteWhenRefDelete } from "../../utils/isTourEnd";
 import { ITour } from "./tour.interface";
-import { createSlug } from "../../utils/createSlug";
 import { tourSearchableFields } from "./tour.constants";
-import { excludedField } from "../../constants/constants";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 
 // Tour-Types
@@ -24,11 +22,26 @@ const createTourType = async (name: string) => {
   };
 };
 
-const getAllTourTypes = async () => {
-  const allTourTypes = await TourType.find({});
+const getAllTourTypes = async (query: Record<string, string>) => {
+  const queryElement = new QueryBuilder(TourType.find(), query);
+  const tours = queryElement.search(["name"]).filter().sort().paginate();
+
+  const [data, meta] = await Promise.all([
+    tours.build(),
+    queryElement.getMeta(),
+  ]);
 
   return {
-    data: allTourTypes,
+    data,
+    meta,
+  };
+};
+
+const getSingleTourTypes = async (_id: string) => {
+  const tourType = await TourType.findById(_id);
+
+  return {
+    data: tourType,
   };
 };
 
@@ -79,7 +92,6 @@ const createTour = async (payload: ITour) => {
 
 const getAllTours = async (query: Record<string, string>) => {
   const queryElement = new QueryBuilder(Tour.find(), query);
-
   const tours = queryElement
     .search(tourSearchableFields)
     .filter()
@@ -132,6 +144,7 @@ const deleteTour = async (_id: string) => {
 export const TourServices = {
   createTourType,
   getAllTourTypes,
+  getSingleTourTypes,
   updateTourTypes,
   deleteTourTypes,
   createTour,

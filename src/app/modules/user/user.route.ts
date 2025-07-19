@@ -26,4 +26,10 @@ router.get(
   UserControllers.getAllUser
 );
 
+router.get(
+  "/:id",
+  checkAuth(...Object.values(Role)),
+  UserControllers.getSingleUser
+);
+
 export const UserRoutes = router;

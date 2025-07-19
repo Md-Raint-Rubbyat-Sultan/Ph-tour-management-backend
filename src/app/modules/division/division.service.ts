@@ -1,6 +1,7 @@
 import AppError from "../../errorHelpers/appError";
-import { createSlug } from "../../utils/createSlug";
 import { handleTourDeleteWhenRefDelete } from "../../utils/isTourEnd";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { divisionSearchalbeFields } from "./division.constants";
 import { IDivision } from "./division.interface";
 import { Division } from "./division.model";
 
@@ -18,11 +19,23 @@ const createDivision = async (payload: IDivision) => {
   };
 };
 
-const getAllDivision = async () => {
-  const allDivision = await Division.find({});
+const getAllDivision = async (query: Record<string, string>) => {
+  const queryElement = new QueryBuilder(Division.find(), query);
+  const tours = queryElement
+    .search(divisionSearchalbeFields)
+    .filter()
+    .sort()
+    .fields()
+    .paginate();
+
+  const [data, meta] = await Promise.all([
+    tours.build(),
+    queryElement.getMeta(),
+  ]);
 
   return {
-    data: allDivision,
+    data,
+    meta,
   };
 };
 

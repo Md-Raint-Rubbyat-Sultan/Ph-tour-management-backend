@@ -21,13 +21,17 @@ const createDivision = catchAsync(
 
 const getAllDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await DivisionServices.getAllDivision();
+    const query = req.query;
+    const result = await DivisionServices.getAllDivision(
+      query as Record<string, string>
+    );
 
     SendResponse(res, {
       statusCode: 200,
       success: true,
       message: "Division retrived successfully",
       data: result.data,
+      meta: result.meta,
     });
   }
 );
