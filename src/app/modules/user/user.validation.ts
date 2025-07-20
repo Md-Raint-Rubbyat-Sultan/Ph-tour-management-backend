@@ -14,7 +14,7 @@ export const createUserZodSchema = z.object({
     .max(32, { message: "Password should not larger than 32 character" }),
   phone: z
     .string({ invalid_type_error: "Phone number must be string." })
-    .regex(/^(?:\+8801\d[9])|01\d[9]$/, {
+    .regex(/^(?:\+8801\d{9})|01\d{9}$/, {
       message: "Invalied phone number. Formet: +8801xxxxxxxxx or 01xxxxxxxxx",
     })
     .optional(),

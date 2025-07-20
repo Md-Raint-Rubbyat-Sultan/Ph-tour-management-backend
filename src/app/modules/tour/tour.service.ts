@@ -1,9 +1,14 @@
 import AppError from "../../errorHelpers/appError";
 import { Tour, TourType } from "./tour.model";
-import { handleTourDeleteWhenRefDelete } from "../../utils/isTourEnd";
+import {
+  handleTourDeleteWhenRefDelete,
+  hasTourEnds,
+} from "../../utils/isTourEnd";
 import { ITour } from "./tour.interface";
 import { tourSearchableFields } from "./tour.constants";
 import { QueryBuilder } from "../../utils/QueryBuilder";
+import { Booking } from "../booking/booking.model";
+import { Booking_Status } from "../booking/booking.interface";
 
 // Tour-Types
 const createTourType = async (name: string) => {
@@ -136,6 +141,30 @@ const updateTour = async (
 };
 
 const deleteTour = async (_id: string) => {
+  const isTourExist = await Tour.findById(_id);
+
+  if (!isTourExist) {
+    throw new AppError(400, "Tour already deleted.");
+  }
+
+  const isTourEnd: boolean = isTourExist.endDate
+    ? hasTourEnds(isTourExist.endDate)
+    : false;
+
+  if (!isTourEnd) {
+    const booking = await Booking.findOne({
+      tour: isTourExist._id,
+      status: Booking_Status.COMPLETE,
+    });
+
+    if (booking) {
+      throw new AppError(
+        400,
+        "This tour has bookings. Refund them or wait until the tour ends to delete it."
+      );
+    }
+  }
+
   return {
     data: await Tour.findByIdAndDelete(_id),
   };
