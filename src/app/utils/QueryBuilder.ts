@@ -3,7 +3,7 @@ import { excludedField } from "../constants/constants";
 
 export class QueryBuilder<T> {
   public modelQuery: Query<T[], T>;
-  public query: Record<string, string>;
+  public readonly query: Record<string, string>;
 
   constructor(modelQuery: Query<T[], T>, query: Record<string, string>) {
     this.modelQuery = modelQuery;
