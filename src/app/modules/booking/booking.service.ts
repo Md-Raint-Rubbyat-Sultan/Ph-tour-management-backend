@@ -1,4 +1,5 @@
 import AppError from "../../errorHelpers/appError";
+import { createTransactionId } from "../../utils/createTransaction";
 import { Payment_Status } from "../payment/payment.interface";
 import { Payment } from "../payment/payment.model";
 import { ISSLCommerz } from "../SSLCommerz/SSLCommerz.interface";
@@ -7,9 +8,6 @@ import { Tour } from "../tour/tour.model";
 import { User } from "../user/user.model";
 import { Booking_Status, IBooking } from "./booking.interface";
 import { Booking } from "./booking.model";
-
-const createTransactionId = () =>
-  `trans_${Date.now()}_${Math.floor(Math.random() * 1000)}}`;
 
 // booking
 const createBooking = async (payload: IBooking, userId: string) => {
