@@ -19,27 +19,27 @@ router.post(
 
 router.get(
   "/",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN)
-  // BookingController.getAllBookings
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  BookingControllers.getAllBookings
 );
 
 router.get(
   "/my-bookings",
-  checkAuth(...Object.values(Role))
-  // BookingController.getUserBookings
+  checkAuth(...Object.values(Role)),
+  BookingControllers.getUserBookings
 );
 
 router.get(
   "/:bookingId",
-  checkAuth(...Object.values(Role))
-  // BookingController.getSingleBooking
+  checkAuth(...Object.values(Role)),
+  BookingControllers.getSingleBooking
 );
 
 router.patch(
   "/:bookingId/status",
   checkAuth(...Object.values(Role)),
-  validateRequest(updateBookingZodSchema)
-  // BookingController.updateBookingStatus
+  validateRequest(updateBookingZodSchema),
+  BookingControllers.updateBookingStatus
 );
 
 export const BookingRouter = router;
