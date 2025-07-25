@@ -6,7 +6,7 @@ import {
 } from "passport-google-oauth20";
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
-import { Role } from "../modules/user/user.interface";
+import { IsActive, Role } from "../modules/user/user.interface";
 import { Strategy as localStrategy } from "passport-local";
 import bcrypt from "bcryptjs";
 
@@ -19,8 +19,26 @@ passport.use(
     async (email: string, password: string, done) => {
       try {
         const isUserExisted = await User.findOne({ email });
+
         if (!isUserExisted) {
           return done(null, false, { message: "User does not exist." });
+        }
+
+        if (!isUserExisted.isVarified) {
+          return done(null, false, { message: "User is not verified yet." });
+        }
+
+        if (
+          isUserExisted.isActive === IsActive.BLOCKED ||
+          isUserExisted.isActive === IsActive.INACTIVE
+        ) {
+          return done(null, false, {
+            message: `User is ${isUserExisted.isActive}.`,
+          });
+        }
+
+        if (isUserExisted.isDeleted) {
+          return done(null, false, { message: "User is deleted." });
         }
 
         const userAuthenticated = isUserExisted.auth.some(
@@ -73,6 +91,20 @@ passport.use(
         }
 
         let user = await User.findOne({ email });
+
+        if (
+          user &&
+          (user.isActive === IsActive.BLOCKED ||
+            user.isActive === IsActive.INACTIVE)
+        ) {
+          return done(null, false, {
+            message: `User is ${user.isActive}.`,
+          });
+        }
+
+        if (user && user.isDeleted) {
+          return done(null, false, { message: "User is deleted." });
+        }
 
         if (!user) {
           user = await User.create({

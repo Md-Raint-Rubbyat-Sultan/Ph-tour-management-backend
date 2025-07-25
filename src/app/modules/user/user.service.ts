@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { envVars } from "../../config/env";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { userSearchableFields } from "./user.constants";
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 
 const createUser = async (payload: Partial<IUser>) => {
   const { email, ...rest } = payload;
@@ -16,9 +17,9 @@ const createUser = async (payload: Partial<IUser>) => {
   };
 
   const user = await User.create({
+    ...rest,
     email,
     auth: [authProvider],
-    ...rest,
   });
   return { data: user };
 };
@@ -29,6 +30,9 @@ const updateUser = async (
   decodedToken: JwtPayload
 ) => {
   const isUserExist = await User.findById(userId);
+
+  const session = await User.startSession();
+  session.startTransaction();
 
   if (!isUserExist) {
     throw new AppError(404, "User do not exist.");
@@ -57,12 +61,33 @@ const updateUser = async (
     );
   }
 
-  const newUpdatedUser = await User.findOneAndUpdate({ _id: userId }, payload, {
-    new: true,
-    runValidators: true,
-  });
+  if (!payload.picture) {
+    const { picture, ...rest } = payload;
+    payload = rest;
+  }
 
-  return { data: newUpdatedUser };
+  try {
+    const newUpdatedUser = await User.findOneAndUpdate(
+      { _id: userId },
+      payload,
+      {
+        new: true,
+        runValidators: true,
+        session,
+      }
+    );
+
+    if (payload.picture && isUserExist.picture) {
+      await deleteImageFromCloudinary(isUserExist.picture);
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return { data: newUpdatedUser };
+  } catch (error: any) {
+    throw new AppError(400, `Faild to update user. ${error.message}`);
+  }
 };
 
 const getAllUser = async (query: Record<string, string>) => {

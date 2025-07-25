@@ -2,11 +2,14 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { DivisionServices } from "./division.service";
 import { SendResponse } from "../../utils/sendResponse";
-import { createSlug } from "../../utils/createSlug";
+import { IDivision } from "./division.interface";
 
 const createDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const divisionInfo = req.body;
+    const divisionInfo: IDivision = {
+      ...req.body,
+      thumbnail: (req.file as Express.Multer.File)?.path,
+    };
 
     const result = await DivisionServices.createDivision(divisionInfo);
 
@@ -53,7 +56,10 @@ const getSingleDivision = catchAsync(
 const updateDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const _id = req.params.id;
-    const divisionInfo = req.body;
+    const divisionInfo = {
+      ...req.body,
+      thumbnail: req.file as Express.Multer.File,
+    };
 
     const result = await DivisionServices.updateDivision(_id, divisionInfo);
 

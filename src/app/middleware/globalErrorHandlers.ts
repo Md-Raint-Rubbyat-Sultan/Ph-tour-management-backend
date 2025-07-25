@@ -7,8 +7,9 @@ import { handleDuplicateError } from "../errorHelpers/handleDuplicateError";
 import { handleCastError } from "../errorHelpers/handleCastError";
 import { handleValidationError } from "../errorHelpers/handleValidationError";
 import { handkeZodError } from "../errorHelpers/handkeZodError";
+import { deleteImageFromCloudinary } from "../config/cloudinary.config";
 
-export const globalErrorHandler = (
+export const globalErrorHandler = async (
   error: any,
   req: Request,
   res: Response,
@@ -19,6 +20,18 @@ export const globalErrorHandler = (
 
   if (envVars.NODE_ENV === "development") {
     console.log(error);
+  }
+
+  // image deletion from cloudinary if any error occur while creating doc to DB after uploading image
+  if (req.file) {
+    await deleteImageFromCloudinary(req.file.path);
+  }
+  if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+    const images = (req.files as Express.Multer.File[]).map(
+      (file) => file.path
+    );
+
+    await Promise.all(images.map((image) => deleteImageFromCloudinary(image)));
   }
 
   // Duplicate error check
