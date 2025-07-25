@@ -1,3 +1,4 @@
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 import AppError from "../../errorHelpers/appError";
 import { handleTourDeleteWhenRefDelete } from "../../utils/isTourEnd";
 import { QueryBuilder } from "../../utils/QueryBuilder";
@@ -50,6 +51,9 @@ const getSingleDivision = async (slug: string) => {
 const updateDivision = async (_id: string, payload: Partial<IDivision>) => {
   const isDivisionExist = await Division.findById(_id);
 
+  const session = await Division.startSession();
+  session.startTransaction();
+
   if (!isDivisionExist) {
     throw new AppError(400, "Division does not exist.");
   }
@@ -63,14 +67,31 @@ const updateDivision = async (_id: string, payload: Partial<IDivision>) => {
     throw new AppError(400, "A division with this name already exist.");
   }
 
-  const updatedDivision = await Division.findByIdAndUpdate(_id, payload, {
-    new: true,
-    runValidators: true,
-  });
+  if (!payload.thumbnail) {
+    const { thumbnail, ...rest } = payload;
+    payload = rest;
+  }
 
-  return {
-    data: updatedDivision,
-  };
+  try {
+    const updatedDivision = await Division.findByIdAndUpdate(_id, payload, {
+      new: true,
+      runValidators: true,
+      session,
+    });
+
+    if (payload.thumbnail && isDivisionExist.thumbnail) {
+      await deleteImageFromCloudinary(isDivisionExist.thumbnail);
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      data: updatedDivision,
+    };
+  } catch (error: any) {
+    throw new AppError(400, `Faild to update division. ${error.message}`);
+  }
 };
 
 const deleteDivision = async (_id: string) => {

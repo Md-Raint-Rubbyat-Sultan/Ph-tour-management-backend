@@ -26,6 +26,10 @@ export const checkAuth = (...authRoles: string[]) =>
       throw new AppError(404, "User do not exist.");
     }
 
+    if (!isUserExisted.isVarified) {
+      throw new AppError(400, "User is not verified.");
+    }
+
     if (
       isUserExisted.isActive === IsActive.BLOCKED ||
       isUserExisted.isActive === IsActive.INACTIVE
@@ -34,7 +38,7 @@ export const checkAuth = (...authRoles: string[]) =>
     }
 
     if (isUserExisted.isDeleted) {
-      throw new AppError(400, "User do not exist.");
+      throw new AppError(400, "User is deleted.");
     }
 
     if (!authRoles.includes(verifiedToken.role)) {

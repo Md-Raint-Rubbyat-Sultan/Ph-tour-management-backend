@@ -2,12 +2,16 @@ import { NextFunction, Request, Response } from "express";
 import { UserServices } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { SendResponse } from "../../utils/sendResponse";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { envVars } from "../../config/env";
+import { JwtPayload } from "jsonwebtoken";
 
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await UserServices.createUser(req.body);
+    const userInfo = {
+      ...req.body,
+      picture: (req.file as Express.Multer.File) || "",
+    };
+
+    const result = await UserServices.createUser(userInfo);
 
     SendResponse(res, {
       statusCode: 201,
@@ -21,7 +25,10 @@ const createUser = catchAsync(
 const updateUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.id;
-    const payload = req.body;
+    const payload = {
+      ...req.body,
+      picture: req.file as Express.Multer.File,
+    };
     const verifiedToken = req.user;
 
     const result = await UserServices.updateUser(

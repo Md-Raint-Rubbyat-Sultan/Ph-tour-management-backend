@@ -9,6 +9,7 @@ import { tourSearchableFields } from "./tour.constants";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { Booking } from "../booking/booking.model";
 import { Booking_Status } from "../booking/booking.interface";
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 
 // Tour-Types
 const createTourType = async (name: string) => {
@@ -129,15 +130,64 @@ const updateTour = async (
 ): Promise<{ data: ITour | null }> => {
   const existingTour = await Tour.findById(_id);
 
+  const session = await Tour.startSession();
+  session.startTransaction();
+
   if (!existingTour) {
     throw new Error("Tour not found.");
   }
 
-  const updatedTour = await Tour.findByIdAndUpdate(_id, payload, { new: true });
+  if (
+    payload.images &&
+    payload.images.length > 0 &&
+    existingTour.images &&
+    existingTour.images.length > 0
+  ) {
+    payload.images = [...payload.images, ...existingTour.images];
+  }
 
-  return {
-    data: updatedTour,
-  };
+  if (
+    payload.deleteImages &&
+    payload.deleteImages.length > 0 &&
+    existingTour.images &&
+    existingTour.images.length > 0
+  ) {
+    const restDbImages = existingTour.images.filter(
+      (image) => !payload.deleteImages?.includes(image)
+    );
+    const updatedTourImage = (payload.images || [])
+      .filter((image) => !payload.deleteImages?.includes(image))
+      .filter((image) => !restDbImages.includes(image));
+
+    payload.images = [...updatedTourImage, ...restDbImages];
+  }
+
+  try {
+    const updatedTour = await Tour.findByIdAndUpdate(_id, payload, {
+      new: true,
+      session,
+    });
+
+    if (
+      payload.deleteImages &&
+      payload.deleteImages.length > 0 &&
+      existingTour.images &&
+      existingTour.images.length > 0
+    ) {
+      await Promise.all(
+        payload.deleteImages.map((image) => deleteImageFromCloudinary(image))
+      );
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      data: updatedTour,
+    };
+  } catch (error) {
+    throw new AppError(400, "Faild to update tour.");
+  }
 };
 
 const deleteTour = async (_id: string) => {
