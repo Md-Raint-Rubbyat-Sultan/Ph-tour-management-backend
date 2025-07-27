@@ -5,13 +5,13 @@ import path from "path";
 import ejs from "ejs";
 
 const transporter = nodemailer.createTransport({
+  host: envVars.EMAIL_SENDER.SMTP_HOST,
+  port: Number(envVars.EMAIL_SENDER.SMTP_PORT),
   secure: true,
   auth: {
     user: envVars.EMAIL_SENDER.SMTP_USER,
     pass: envVars.EMAIL_SENDER.SMTP_PASS,
   },
-  port: Number(envVars.EMAIL_SENDER.SMTP_PORT),
-  host: envVars.EMAIL_SENDER.SMTP_HOST,
 });
 
 interface ISendEmailOptions {

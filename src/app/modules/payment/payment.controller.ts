@@ -3,6 +3,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { PaymentServices } from "./payment.service";
 import { envVars } from "../../config/env";
 import { SendResponse } from "../../utils/sendResponse";
+import { JwtPayload } from "jsonwebtoken";
 
 const initPayment = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -63,9 +64,26 @@ const cancelPayment = catchAsync(
   }
 );
 
+const getPDFDownloadLink = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const _id = req.params.id;
+    const { userId } = req.user as JwtPayload;
+
+    const result = await PaymentServices.getPDFDownloadLink(_id, userId);
+
+    SendResponse(res, {
+      statusCode: 201,
+      success: true,
+      message: "PDF Link retrive.",
+      data: result.data,
+    });
+  }
+);
+
 export const PaymentControllers = {
   initPayment,
   successPayment,
   failedPayment,
   cancelPayment,
+  getPDFDownloadLink,
 };

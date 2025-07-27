@@ -1,12 +1,10 @@
 import { JwtPayload } from "jsonwebtoken";
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 import AppError from "../../errorHelpers/appError";
-import { IAuthProvider, IUser, Role } from "./user.interface";
-import { User } from "./user.model";
-import bcrypt from "bcryptjs";
-import { envVars } from "../../config/env";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { userSearchableFields } from "./user.constants";
-import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
+import { IAuthProvider, IUser, Role } from "./user.interface";
+import { User } from "./user.model";
 
 const createUser = async (payload: Partial<IUser>) => {
   const { email, ...rest } = payload;
@@ -29,10 +27,16 @@ const updateUser = async (
   payload: Partial<IUser>,
   decodedToken: JwtPayload
 ) => {
-  const isUserExist = await User.findById(userId);
+  if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
+    if (userId !== decodedToken.userId) {
+      throw new AppError(403, "You are forbidden to update this user.");
+    }
+  }
 
   const session = await User.startSession();
   session.startTransaction();
+
+  const isUserExist = await User.findById(userId);
 
   if (!isUserExist) {
     throw new AppError(404, "User do not exist.");
@@ -52,13 +56,6 @@ const updateUser = async (
     if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
       throw new AppError(403, "You are forbidden to update this fields.");
     }
-  }
-
-  if (payload.password) {
-    payload.password = await bcrypt.hash(
-      payload.password,
-      Number(envVars.BCRYPT_SALT)
-    );
   }
 
   if (!payload.picture) {
@@ -86,6 +83,9 @@ const updateUser = async (
 
     return { data: newUpdatedUser };
   } catch (error: any) {
+    // some error occur do not implement anything to the real data base
+    await session.abortTransaction(); // rollback
+    session.endSession();
     throw new AppError(400, `Faild to update user. ${error.message}`);
   }
 };

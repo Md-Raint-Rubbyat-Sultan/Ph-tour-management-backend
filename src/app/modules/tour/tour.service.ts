@@ -186,6 +186,9 @@ const updateTour = async (
       data: updatedTour,
     };
   } catch (error) {
+    // some error occur do not implement anything to the real data base
+    await session.abortTransaction(); // rollback
+    session.endSession();
     throw new AppError(400, "Faild to update tour.");
   }
 };

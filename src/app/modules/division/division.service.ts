@@ -90,6 +90,9 @@ const updateDivision = async (_id: string, payload: Partial<IDivision>) => {
       data: updatedDivision,
     };
   } catch (error: any) {
+    // some error occur do not implement anything to the real data base
+    await session.abortTransaction(); // rollback
+    session.endSession();
     throw new AppError(400, `Faild to update division. ${error.message}`);
   }
 };
