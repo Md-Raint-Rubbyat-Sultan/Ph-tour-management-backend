@@ -4,6 +4,7 @@ import { PaymentServices } from "./payment.service";
 import { envVars } from "../../config/env";
 import { SendResponse } from "../../utils/sendResponse";
 import { JwtPayload } from "jsonwebtoken";
+import { SSLValidation } from "../SSLCommerz/SSLCommerz.service";
 
 const initPayment = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -80,10 +81,24 @@ const getPDFDownloadLink = catchAsync(
   }
 );
 
+const validatePayment = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await SSLValidation(req.body);
+
+    SendResponse(res, {
+      statusCode: 201,
+      success: true,
+      message: "validation send.",
+      data: null,
+    });
+  }
+);
+
 export const PaymentControllers = {
   initPayment,
   successPayment,
   failedPayment,
   cancelPayment,
   getPDFDownloadLink,
+  validatePayment,
 };

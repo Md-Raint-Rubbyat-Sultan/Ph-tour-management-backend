@@ -9,6 +9,7 @@ router.post("/init-payment/:bookingId", PaymentControllers.initPayment);
 router.post("/success", PaymentControllers.successPayment);
 router.post("/fail", PaymentControllers.failedPayment);
 router.post("/cancel", PaymentControllers.cancelPayment);
+router.post("/validate-payment", PaymentControllers.validatePayment);
 router.post(
   "/invoice/:id",
   checkAuth(...Object.values(Role)),

@@ -1,5 +1,6 @@
 import { envVars } from "../../config/env";
 import AppError from "../../errorHelpers/appError";
+import { Payment } from "../payment/payment.model";
 import { ISSLCommerz } from "./SSLCommerz.interface";
 
 const SSLCommerzInit = async (payload: ISSLCommerz) => {
@@ -13,7 +14,7 @@ const SSLCommerzInit = async (payload: ISSLCommerz) => {
       success_url: `${envVars.SSL.SSL_SUCCESS_BACKEND_URL}?transactionId=${payload.transactionId}&amount=${payload.amount}&status=success`,
       fail_url: `${envVars.SSL.SSL_FAIL_BACKEND_URL}?transactionId=${payload.transactionId}&amount=${payload.amount}&status=fail`,
       cancel_url: `${envVars.SSL.SSL_CANCEL_BACKEND_URL}?transactionId=${payload.transactionId}&amount=${payload.amount}&status=cancel`,
-      // ipn_url: "http://localhost:3030/ipn",
+      ipn_url: envVars.SSL.SSL_IPN_URL,
       shipping_method: "N/A",
       product_name: "Tour",
       product_category: "Service",
@@ -58,6 +59,26 @@ const SSLCommerzInit = async (payload: ISSLCommerz) => {
     };
   } catch (error: any) {
     throw new AppError(400, error.message);
+  }
+};
+
+export const SSLValidation = async (payload: any) => {
+  try {
+    const result = await fetch(
+      `${envVars.SSL.SSL_VALIDATION_API}?val_id=${payload.val_id}&store_id=${envVars.SSL.STORE_ID}&store_passwd=${envVars.SSL.STORE_PASS}`
+    );
+
+    const data = await result.json();
+
+    console.log("SSLValidation function", data);
+
+    await Payment.findOneAndUpdate(
+      { transactionId: payload.tran_id },
+      { paymentGatewayData: data },
+      { runValidators: true }
+    );
+  } catch (error: any) {
+    throw new AppError(401, `Payment validation error: ${error.message}`);
   }
 };
 
