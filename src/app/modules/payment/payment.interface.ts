@@ -1,5 +1,4 @@
 import { Types } from "mongoose";
-import { IBooking } from "../booking/booking.interface";
 
 export enum Payment_Status {
   PAID = "PAID",

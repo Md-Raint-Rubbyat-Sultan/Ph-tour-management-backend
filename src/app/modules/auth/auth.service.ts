@@ -6,7 +6,6 @@ import bcrypt from "bcryptjs";
 import { IAuthProvider, IsActive } from "../user/user.interface";
 import { sendEmailOptions } from "../../utils/sendEmail";
 import jwt from "jsonwebtoken";
-import { name } from "ejs";
 import { envVars } from "../../config/env";
 
 // const credentialLogin = async (payload: Partial<IUser>) => {

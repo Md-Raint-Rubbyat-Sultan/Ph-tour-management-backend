@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { TourServices } from "./tour.service";
 import { SendResponse } from "../../utils/sendResponse";
-import { createSlug } from "../../utils/createSlug";
 import { ITour } from "./tour.interface";
 
 // Tour-Types

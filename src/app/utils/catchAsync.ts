@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { envVars } from "../config/env";
 
 type AsyncHandler = (
   req: Request,
