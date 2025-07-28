@@ -1,8 +1,9 @@
+import ejs from "ejs";
 import nodemailer from "nodemailer";
+import path from "path";
 import { envVars } from "../config/env";
 import AppError from "../errorHelpers/appError";
-import path from "path";
-import ejs from "ejs";
+import fs from "fs";
 
 const transporter = nodemailer.createTransport({
   host: envVars.EMAIL_SENDER.SMTP_HOST,
@@ -47,7 +48,6 @@ export const sendEmailOptions = async ({
 
     console.log(`\u2709\uFE0F Email sent to ${to}: ${info.messageId}`);
   } catch (error) {
-    console.log(error);
     throw new AppError(400, "Email error.");
   }
 };

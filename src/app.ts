@@ -4,7 +4,7 @@ import express, { Application, Request, Response } from "express";
 import expressSession from "express-session";
 import passport from "passport";
 import { envVars } from "./app/config/env";
-import "./app/config/passport.ts";
+import "./app/config/passport";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandlers";
 import notFound from "./app/middleware/notFound";
 import { router } from "./app/routes";
@@ -22,6 +22,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(cookieParser());
 app.use(express.json());
+app.set("trust proxy", 1);
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
