@@ -1,13 +1,13 @@
-import express, { Application, Request, Response } from "express";
-import cors from "cors";
-import { router } from "./app/routes";
-import { globalErrorHandler } from "./app/middleware/globalErrorHandlers";
-import notFound from "./app/middleware/notFound";
 import cookieParser from "cookie-parser";
-import passport from "passport";
+import cors from "cors";
+import express, { Application, Request, Response } from "express";
 import expressSession from "express-session";
+import passport from "passport";
 import { envVars } from "./app/config/env";
 import "./app/config/passport.ts";
+import { globalErrorHandler } from "./app/middleware/globalErrorHandlers";
+import notFound from "./app/middleware/notFound";
+import { router } from "./app/routes";
 
 const app: Application = express();
 
@@ -23,7 +23,12 @@ app.use(passport.session());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(
+  cors({
+    origin: envVars.FRONTEND_URL,
+    credentials: true,
+  })
+);
 
 app.use("/api/v1", router);
 

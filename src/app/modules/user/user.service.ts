@@ -42,13 +42,16 @@ const updateUser = async (
     throw new AppError(404, "User do not exist.");
   }
 
+  if (
+    decodedToken.role === Role.ADMIN &&
+    isUserExist.role === Role.SUPER_ADMIN
+  ) {
+    throw new AppError(403, "You are forbidden to update this role.");
+  }
+
   if (payload.role) {
     if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
       throw new AppError(403, "You are forbidden to update user role.");
-    }
-
-    if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
-      throw new AppError(403, "You are forbidden to update this role.");
     }
   }
 
@@ -111,6 +114,13 @@ const getAllUser = async (query: Record<string, string>) => {
   };
 };
 
+const getMe = async (_id: string) => {
+  const user = await User.findById(_id);
+  return {
+    data: user,
+  };
+};
+
 const getSingleUser = async (_id: string) => {
   const user = await User.findById(_id);
   return {
@@ -122,5 +132,6 @@ export const UserServices = {
   createUser,
   updateUser,
   getAllUser,
+  getMe,
   getSingleUser,
 };
