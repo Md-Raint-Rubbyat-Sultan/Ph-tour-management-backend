@@ -1,9 +1,8 @@
-import ejs from "ejs";
 import nodemailer from "nodemailer";
+import ejs from "ejs";
 import path from "path";
 import { envVars } from "../config/env";
 import AppError from "../errorHelpers/appError";
-import fs from "fs";
 
 const transporter = nodemailer.createTransport({
   host: envVars.EMAIL_SENDER.SMTP_HOST,
